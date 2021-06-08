@@ -8,9 +8,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.group_name = "group"
 
     async def receive_json(self, content, **kwargs):
-        print(f"receive_json: {content}")
-        command = content['command']
-        print((self.scope["headers"]))
+        #print(f"receive_json: {content}")
+        command = content.get('command', None)
+        #print(self.scope['user'])
 
         if command == 'echo':
             await self.send_json(
@@ -26,7 +26,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             self.channel_name,
         )
         await self.accept()
-        print((self.scope["headers"]))
+        #print(dict(self.scope["headers"])[b'token'].decode())
+        print(self.scope['user'].id)
 
         await self.send_json({
             "join": "yes"
