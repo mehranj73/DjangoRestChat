@@ -8,7 +8,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.group_name = "group"
 
     async def receive_json(self, content, **kwargs):
-        print(content)
+        print(f"receive_json: {content}")
         command = content['command']
 
         if command == 'echo':
@@ -19,11 +19,38 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             )
 
     async def connect(self):
+        print("connected")
         await self.channel_layer.group_add(
-            "room.group_name",
+            self.group_name,
             self.channel_name,
         )
         await self.accept()
 
+        await self.send_json({
+            "join": "yes"
+        })
+
     async def disconnect(self, code):
-        pass
+        print("disconnected")
+        await self.channel_layer.group_discard(
+            self.group_name,
+            self.channel_name
+        )
+
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                "type": "leave",
+                "message": "message"
+            }
+        )
+
+    async def leave(self, event):
+        print(event)
+        await self.send_json({
+            "leave": "yes"
+        })
+
+
+
+
