@@ -26,8 +26,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             self.channel_name,
         )
         await self.accept()
-        #print(dict(self.scope["headers"])[b'token'].decode())
-        print(self.scope['user'].id)
+        # print(dict(self.scope["headers"]))
+        print(self.scope['user'])
 
         await self.send_json({
             "join": "yes"

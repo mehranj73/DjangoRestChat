@@ -20,13 +20,22 @@ class JWTAuthMiddleware:
     async def __call__(self, scope, receive, send):
         close_old_connections()
         try:
-            if jwt_token := dict(scope["headers"])[b'token'].decode():
-                jwt_payload = self.get_payload(jwt_token)
-                user_credentials = self.get_user_credentials(jwt_payload)
-                user = await self.get_logged_in_user(user_credentials)
-                scope['user'] = user
+            header = dict(scope["headers"]).get(b'authorization', None)
+            if header is not None:
+                header = header.decode()
+                jwt_token_list = header.split(" ")
+                if jwt_token_list[0] == "bearer":
+                    jwt_token = jwt_token_list[1]
+                    print(jwt_token)
+                    jwt_payload = self.get_payload(jwt_token)
+                    user_credentials = self.get_user_credentials(jwt_payload)
+                    user = await self.get_logged_in_user(user_credentials)
+                    scope['user'] = user
+                else:
+                    scope['user'] = AnonymousUser()
             else:
                 scope['user'] = AnonymousUser()
+
         except (InvalidSignatureError, KeyError, ExpiredSignatureError, DecodeError):
             traceback.print_exc()
         except:
